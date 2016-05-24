@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 # import the necessary packages
-from cu_coursecatalog_spider.items import SchmidCatalog
+from cu_coursecatalog_spider.items import Course, Major, Minor
 import scrapy
+import json
+from sets import Set
 
 # Spider used to crawl through the webpage and get info
 class SchmidCatalogSpider(scrapy.Spider):
@@ -31,14 +34,70 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 	# In charge of processing the response and returning the scraped data as objects
 	def parse(self, response):
-		for sel in response.xpath('//p//span//a'):
-			major = sel.xpath('@title').extract()
-			sample = sel.xpath('text()').extract()
-			link = sel.xpath('@href').extract()
-			print major
-			print sample
-			print link
-			print "\n"
+		# Used to get major names
+		# for sel in response.xpath('//p//span//a'):
+		# 	majorTitle = sel.xpath('text()').extract()[0]
+		# 	yield Major(title=majorTitle, department='Schmid College of Science and Technology')
+
+		# Used to get minor names
+		# for sel in response.xpath('//h3[re:test(., \'Minor in\', \'i\')]'):
+		# 	minorTitle = sel.xpath('text()').extract()[0][9:]
+		# 	yield Minor(title=minorTitle, department='Schmid College of Science and Technology')
+
+		# Used to get courses
+		subject = ''
+		number = -1
+		name = ' '
+		empty = []
+		heading = True
+		descReplace = Set([', ', '(Same as ', 'Prerequisites, ', '. Corequisite, ', 'Prerequisite, ', '. Laboratory component for '])
+		for sel in response.xpath('//*[(name()=\'h3\' and re:test(., \'^((?!Minor in).)*$\', \'i\')) or (name()=\'p\' and @class=\'coursedescription\')]'):
+			if (heading == True):
+				courseStr = sel.xpath('text()').extract()[0]
+				courseStr = courseStr.split()
+				print courseStr
+				name = ' '.join(courseStr[2:])
+				subject = courseStr[0]
+				number = courseStr[1]
+				print subject
+				print number
+				print name
+				heading = False
+			else:
+				prerequisites = sel.xpath('a/text()').extract()
+				if (prerequisites != empty):
+					description = sel.xpath('text()').extract()
+					print description
+					prereqIdx = 0
+					for i in range(len(description)):
+						if description[i] in descReplace:
+							if description[i][0] == u',' and description[i][1] == u' ':
+								description[i] = description[i] + prerequisites[prereqIdx]
+							else:
+								description[i] = description[i] + prerequisites[prereqIdx]
+						prereqIdx+=1
+				description = ''.join(description)
+				print
+				print description
+				heading = True
+				print
+				#yield Course(subject=subject, number=number, name=name, description=description)
+
+		# Used to get subtitles
+		# for sel in response.xpath('//p//a'):
+		# 	title = sel.xpath('@title').extract()
+		# 	text = sel.xpath('text()').extract()
+		# 	print title
+		# 	print text
+		# just ignore the tbody in Chrome
+
+		# Used to get table
+		# for sel in response.xpath('//table[1]/tr/td/p/a'):
+		# 	title = sel.xpath('@title').extract()
+		# 	for ustring in title:
+		# 		print ustring.encode('UTF8')
+
+		# print json.dumps({"c":0, "b":0, "a":0}, sort_keys=True)
 
 	# def parse_page(self, response):
 	# 	# loop over all links in the page that contain

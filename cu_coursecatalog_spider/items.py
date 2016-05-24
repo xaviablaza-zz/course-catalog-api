@@ -13,5 +13,16 @@ class CuCoursecatalogSpiderItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
-class SchmidCatalog(scrapy.Item):
-	majors = scrapy.Field()
+class Course(scrapy.Item):
+	subject = scrapy.Field()
+	number = scrapy.Field()
+	name = scrapy.Field()
+	description = scrapy.Field()
+
+class Major(scrapy.Item):
+	title = scrapy.Field()
+	department = scrapy.Field()
+
+class Minor(scrapy.Item):
+	title = scrapy.Field()
+	department = scrapy.Field()
