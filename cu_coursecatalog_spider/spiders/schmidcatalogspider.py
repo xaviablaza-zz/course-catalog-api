@@ -50,7 +50,6 @@ class SchmidCatalogSpider(scrapy.Spider):
 		name = ' '
 		empty = []
 		heading = True
-		descReplace = Set([', ', '(Same as ', 'Prerequisites, ', '. Corequisite, ', 'Prerequisite, ', '. Laboratory component for '])
 		for sel in response.xpath('//*[(name()=\'h3\' and re:test(., \'^((?!Minor in).)*$\', \'i\')) or (name()=\'p\' and @class=\'coursedescription\')]'):
 			if (heading == True):
 				courseStr = sel.xpath('text()').extract()[0]
@@ -68,14 +67,8 @@ class SchmidCatalogSpider(scrapy.Spider):
 				if (prerequisites != empty):
 					description = sel.xpath('text()').extract()
 					print description
-					prereqIdx = 0
-					for i in range(len(description)):
-						if description[i] in descReplace:
-							if description[i][0] == u',' and description[i][1] == u' ':
-								description[i] = description[i] + prerequisites[prereqIdx]
-							else:
-								description[i] = description[i] + prerequisites[prereqIdx]
-						prereqIdx+=1
+					for i in range(len(prerequisites)):
+						description.insert((2*i)+1, prerequisites[i])
 				description = ''.join(description)
 				print
 				print description
