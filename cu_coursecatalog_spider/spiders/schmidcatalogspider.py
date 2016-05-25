@@ -3,7 +3,6 @@
 from cu_coursecatalog_spider.items import Course, Major, Minor
 import scrapy
 import json
-from sets import Set
 
 # Spider used to crawl through the webpage and get info
 class SchmidCatalogSpider(scrapy.Spider):
@@ -34,10 +33,36 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 	# In charge of processing the response and returning the scraped data as objects
 	def parse(self, response):
+		empty = []
+
 		# Used to get major names
-		# for sel in response.xpath('//p//span//a'):
-		# 	majorTitle = sel.xpath('text()').extract()[0]
-		# 	yield Major(title=majorTitle, department='Schmid College of Science and Technology')
+		major1 = None
+		major2 = None
+		for selector in response.xpath('//p/span/a'):
+			if major1 == None:
+				major1 = selector.xpath('text()').extract()[0]
+			elif major2 == None:
+				major2 = selector.xpath('text()').extract()[0]
+			else:
+				print major1
+				print major2
+				for sel in response.xpath('//p[preceding-sibling::h2[1][.=\''+major1+'\']]'):
+					links = sel.xpath('a/text()').extract()
+					subheading = sel.xpath('span/text()').extract()
+					description = sel.xpath('text()').extract()
+					if (links != empty):
+						for i in range(len(links)):
+							description.insert((2*i)+1, links[i])
+					elif (subheading != empty):
+						subheading = ''.join(subheading)
+					description = ''.join(description)
+					print links
+					print subheading
+					print description
+					print
+				major1 = major2
+				major2 = None
+				# yield Major(title=majorTitle, department='Schmid College of Science and Technology')
 
 		# Used to get minor names
 		# for sel in response.xpath('//h3[re:test(., \'Minor in\', \'i\')]'):
@@ -45,36 +70,27 @@ class SchmidCatalogSpider(scrapy.Spider):
 		# 	yield Minor(title=minorTitle, department='Schmid College of Science and Technology')
 
 		# Used to get courses
-		subject = ''
-		number = -1
-		name = ' '
-		empty = []
-		heading = True
-		for sel in response.xpath('//*[(name()=\'h3\' and re:test(., \'^((?!Minor in).)*$\', \'i\')) or (name()=\'p\' and @class=\'coursedescription\')]'):
-			if (heading == True):
-				courseStr = sel.xpath('text()').extract()[0]
-				courseStr = courseStr.split()
-				print courseStr
-				name = ' '.join(courseStr[2:])
-				subject = courseStr[0]
-				number = courseStr[1]
-				print subject
-				print number
-				print name
-				heading = False
-			else:
-				prerequisites = sel.xpath('a/text()').extract()
-				if (prerequisites != empty):
-					description = sel.xpath('text()').extract()
-					print description
-					for i in range(len(prerequisites)):
-						description.insert((2*i)+1, prerequisites[i])
-				description = ''.join(description)
-				print
-				print description
-				heading = True
-				print
-				#yield Course(subject=subject, number=number, name=name, description=description)
+		# subject = ''
+		# number = -1
+		# name = ' '
+		# heading = True
+		# for sel in response.xpath('//*[(name()=\'h3\' and re:test(., \'^((?!Minor in).)*$\', \'i\')) or (name()=\'p\' and @class=\'coursedescription\')]'):
+		# 	if (heading == True):
+		# 		courseStr = sel.xpath('text()').extract()[0]
+		# 		courseStr = courseStr.split()
+		# 		name = ' '.join(courseStr[2:])
+		# 		subject = courseStr[0]
+		# 		number = courseStr[1]
+		# 		heading = False
+		# 	else:
+		# 		prerequisites = sel.xpath('a/text()').extract()
+		# 		description = sel.xpath('text()').extract()
+		# 		if (prerequisites != empty):
+		# 			for i in range(len(prerequisites)):
+		# 				description.insert((2*i)+1, prerequisites[i])
+		# 		description = ''.join(description)
+		# 		heading = True
+		# 		yield Course(subject=subject, number=number, name=name, description=description)
 
 		# Used to get subtitles
 		# for sel in response.xpath('//p//a'):
