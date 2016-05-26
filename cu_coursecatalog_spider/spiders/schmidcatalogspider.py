@@ -34,35 +34,49 @@ class SchmidCatalogSpider(scrapy.Spider):
 	# In charge of processing the response and returning the scraped data as objects
 	def parse(self, response):
 		empty = []
+		ignore = u'\r\n'
 
 		# Used to get major names
-		major1 = None
-		major2 = None
+		descs = []
+		reqs = []
 		for selector in response.xpath('//p/span/a'):
-			if major1 == None:
-				major1 = selector.xpath('text()').extract()[0]
-			elif major2 == None:
-				major2 = selector.xpath('text()').extract()[0]
-			else:
-				print major1
-				print major2
-				for sel in response.xpath('//p[preceding-sibling::h2[1][.=\''+major1+'\']]'):
-					links = sel.xpath('a/text()').extract()
-					subheading = sel.xpath('span/text()').extract()
-					description = sel.xpath('text()').extract()
-					if (links != empty):
-						for i in range(len(links)):
-							description.insert((2*i)+1, links[i])
-					elif (subheading != empty):
-						subheading = ''.join(subheading)
+			majorTitle = selector.xpath('@title').extract()[0]
+			print majorTitle
+			subHeadingStr = ''
+			for sel in response.xpath('//*[(name()=\'p\' or name()=\'table\') and (preceding-sibling::h2[1][.=\''+majorTitle+'\'])]'):
+				links = sel.xpath('a/text()').extract()
+				subHeading = sel.xpath('span/text()').extract()
+				description = sel.xpath('text()').extract()
+				tableTxt = sel.xpath('tr/td/p/a/text()').extract()
+				# If there are links then they must be put into the description
+				if links != empty:
+					for i in range(len(links)):
+						description.insert((2*i)+1, links[i])
 					description = ''.join(description)
-					print links
-					print subheading
-					print description
-					print
-				major1 = major2
-				major2 = None
-				# yield Major(title=majorTitle, department='Schmid College of Science and Technology')
+					descs.insert(len(descs), description.encode('utf-8'))
+				elif subHeading != empty and description != empty:
+					subHeadingStr += subHeading[0] + description[0]
+				elif subHeading != empty:
+					descs.insert(len(descs), subHeading[0].encode('utf-8'))
+				elif description != empty:
+					if ignore not in description:
+						descs.insert(len(descs), description[0].encode('utf-8'))
+				if tableTxt != empty:
+					reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
+					subHeadingStr = ''
+					for subj in tableTxt:
+						subj = subj.encode('utf-8')
+					reqs.insert(len(reqs), tableTxt)
+				# print links
+				# print subHeading
+				# print description
+				# print tableTxt
+				# print
+			print descs
+			print reqs
+			descs = []
+			reqs = []
+			# yield Major(title=major1, department='Schmid College of Science and Technology')
 
 		# Used to get minor names
 		# for sel in response.xpath('//h3[re:test(., \'Minor in\', \'i\')]'):
@@ -91,20 +105,6 @@ class SchmidCatalogSpider(scrapy.Spider):
 		# 		description = ''.join(description)
 		# 		heading = True
 		# 		yield Course(subject=subject, number=number, name=name, description=description)
-
-		# Used to get subtitles
-		# for sel in response.xpath('//p//a'):
-		# 	title = sel.xpath('@title').extract()
-		# 	text = sel.xpath('text()').extract()
-		# 	print title
-		# 	print text
-		# just ignore the tbody in Chrome
-
-		# Used to get table
-		# for sel in response.xpath('//table[1]/tr/td/p/a'):
-		# 	title = sel.xpath('@title').extract()
-		# 	for ustring in title:
-		# 		print ustring.encode('UTF8')
 
 		# print json.dumps({"c":0, "b":0, "a":0}, sort_keys=True)
 
