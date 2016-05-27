@@ -34,6 +34,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 	# In charge of processing the response and returning the scraped data as objects
 	def parse(self, response):
 		empty = []
+		emptyStr = ''
 		ignore = u'\r\n'
 
 		# Used to get major names
@@ -56,26 +57,31 @@ class SchmidCatalogSpider(scrapy.Spider):
 					descs.insert(len(descs), description.encode('utf-8'))
 				elif subHeading != empty and description != empty:
 					subHeadingStr += subHeading[0] + description[0]
-				elif subHeading != empty:
-					descs.insert(len(descs), subHeading[0].encode('utf-8'))
 				elif description != empty:
 					if ignore not in description:
-						descs.insert(len(descs), description[0].encode('utf-8'))
+						if subHeadingStr != emptyStr:
+							subHeadingStr = subHeadingStr + ' ' + description[0].encode('utf-8')
+						else:
+							descs.insert(len(descs), description[0].encode('utf-8'))
+				elif subHeading != empty:
+					descs.insert(len(descs), subHeading[0].encode('utf-8'))
+
 				if tableTxt != empty:
 					reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
 					subHeadingStr = ''
 					for subj in tableTxt:
 						subj = subj.encode('utf-8')
 					reqs.insert(len(reqs), tableTxt)
-				# print links
-				# print subHeading
-				# print description
-				# print tableTxt
-				# print
-			print descs
-			print reqs
-			descs = []
-			reqs = []
+				print subHeadingStr
+				print links
+				print subHeading
+				print description
+				print tableTxt
+				print
+			# print descs
+			# print reqs
+			# descs = []
+			# reqs = []
 			# yield Major(title=major1, department='Schmid College of Science and Technology')
 
 		# Used to get minor names
