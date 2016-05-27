@@ -36,6 +36,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 		empty = []
 		emptyStr = ''
 		ignore = u'\r\n'
+		nbsp = u'\xa0'
 
 		# Used to get major names
 		descs = []
@@ -69,18 +70,27 @@ class SchmidCatalogSpider(scrapy.Spider):
 				if tableTxt != empty:
 					# Fix for tables that don't have any links
 					tableSel = tableTxt.xpath('p/a/text()')
-					if tableSel == None:
+					if tableSel == empty or tableSel == None:
 						tableSel = tableTxt.xpath('p/text()').extract()
-						longestIdx = 1
-						longest = 0
-						for i in range(0, len(tableSel)):
-							textLength = len(tableSel[i])
-							if textLength > longest:
-								longest = textLength
-								longestIdx = i+1
-						print tableSel[longestIdx]
-						reqs.insert(len(reqs), tableSel[longestIdx].encode('utf-8'))
-						# need to parse just for the text and no \n or &nbsp
+						tableDesc = ''
+						for uTxt in tableSel:
+							if nbsp not in uTxt:
+								tableDesc += ' ' + uTxt.encode('utf-8')
+						print tableDesc
+						reqs.insert(len(reqs), tableDesc)
+					# elif len(tableTxt.xpath('p/text()').extract()) > 10: need to fix this. maybe just get all the descriptions
+					# 	tableDesc = tableTxt.xpath('p/text()').extract()
+					# 	links = tableSel.extract()
+					# 	for i in range(len(links)):
+					# 		tableDesc.insert((2*i)+2, links[i])
+					# 	tableDesc = ''.join(tableDesc)
+					# 	reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
+					# 	subHeadingStr = ''
+					# 	for descTxt in tableDesc:
+					# 		descTxt = descTxt.encode('utf-8')
+					# 	reqs.insert(len(reqs), tableDesc)
+					# 	print 'suhdude'
+					# 	print tableDesc
 					else:
 						tableSel = tableSel.extract()
 						reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
