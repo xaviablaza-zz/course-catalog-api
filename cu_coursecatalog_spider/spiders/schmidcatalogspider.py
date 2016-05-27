@@ -48,7 +48,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 				links = sel.xpath('a/text()').extract()
 				subHeading = sel.xpath('span/text()').extract()
 				description = sel.xpath('text()').extract()
-				tableTxt = sel.xpath('tr/td/p/a/text()').extract()
+				tableTxt = sel.xpath('tr/td')
 				# If there are links then they must be put into the description
 				if links != empty:
 					for i in range(len(links)):
@@ -56,28 +56,45 @@ class SchmidCatalogSpider(scrapy.Spider):
 					description = ''.join(description)
 					descs.insert(len(descs), description.encode('utf-8'))
 				elif subHeading != empty and description != empty:
-					subHeadingStr += subHeading[0] + description[0]
+					for i in range(0, len(subHeading)):
+						subHeadingStr = subHeadingStr + subHeading[i] + description[i]
 				elif description != empty:
 					if ignore not in description:
 						if subHeadingStr != emptyStr:
-							subHeadingStr = subHeadingStr + ' ' + description[0].encode('utf-8')
+							subHeadingStr = subHeadingStr + ' ' + description[0]
 						else:
 							descs.insert(len(descs), description[0].encode('utf-8'))
 				elif subHeading != empty:
 					descs.insert(len(descs), subHeading[0].encode('utf-8'))
-
 				if tableTxt != empty:
-					reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
-					subHeadingStr = ''
-					for subj in tableTxt:
-						subj = subj.encode('utf-8')
-					reqs.insert(len(reqs), tableTxt)
+					# Fix for tables that don't have any links
+					tableSel = tableTxt.xpath('p/a/text()')
+					if tableSel == None:
+						tableSel = tableTxt.xpath('p/text()').extract()
+						longestIdx = 1
+						longest = 0
+						for i in range(0, len(tableSel)):
+							textLength = len(tableSel[i])
+							if textLength > longest:
+								longest = textLength
+								longestIdx = i+1
+						print tableSel[longestIdx]
+						reqs.insert(len(reqs), tableSel[longestIdx].encode('utf-8'))
+						# need to parse just for the text and no \n or &nbsp
+					else:
+						tableSel = tableSel.extract()
+						reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
+						subHeadingStr = ''
+						for subj in tableSel:
+							subj = subj.encode('utf-8')
+						reqs.insert(len(reqs), tableSel)
+						print tableSel
 				print subHeadingStr
 				print links
 				print subHeading
 				print description
-				print tableTxt
 				print
+			# Need to fix links not adding if it's the first index
 			# print descs
 			# print reqs
 			# descs = []
