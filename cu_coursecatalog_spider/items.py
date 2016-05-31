@@ -4,9 +4,7 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
-
 import scrapy
-
 
 class CuCoursecatalogSpiderItem(scrapy.Item):
     # define the fields for your item here like:
@@ -28,3 +26,5 @@ class Major(scrapy.Item):
 class Minor(scrapy.Item):
 	title = scrapy.Field()
 	department = scrapy.Field()
+	description = scrapy.Field()
+	requirements = scrapy.Field()

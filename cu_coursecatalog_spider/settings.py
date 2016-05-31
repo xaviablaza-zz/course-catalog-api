@@ -63,7 +63,7 @@ NEWSPIDER_MODULE = 'cu_coursecatalog_spider.spiders'
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 # Activate Scrapy's default file scraping capability
 ITEM_PIPELINES = {
-    'scrapy.contrib.pipeline.images.FilesPipeline': 1,
+    'cu_coursecatalog_spider.pipelines.CuCoursecatalogSpiderPipeline': 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
