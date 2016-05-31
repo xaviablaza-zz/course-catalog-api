@@ -22,15 +22,6 @@ class SchmidCatalogSpider(scrapy.Spider):
 		# 'https://www.chapman.edu/catalog/oc/current/ug/content/12155.htm', # School of Pharmacy
 	]
 
-	# Used to click a link on a page
-	# From tutorial: http://www.pyimagesearch.com/2015/10/12/scraping-images-with-python-and-scrapy/
-	# def parse(self, response):
-	# 	# Gets node with link that has title "TIME U.S."
-	# 	url = response.css("div.refineCol ul li").xpath("a[contains(., 'TIME U.S.')]")
-
-	# 	# HTTP Request with URL of request and callback function parse_page
-	# 	yield scrapy.Request(url.xpath("@href").extract_first(), self.parse_page)
-
 	# In charge of processing the response and returning the scraped data as objects
 	def parse(self, response):
 		empty = []
@@ -38,83 +29,83 @@ class SchmidCatalogSpider(scrapy.Spider):
 		ignore = u'\r\n'
 		nbsp = u'\xa0'
 
-		# # Used to get major names
-		# descs = []
-		# reqs = []
-		# for selector in response.xpath('//p/span/a'):
-		# 	majorTitle = selector.xpath('@title').extract()[0]
-		# 	print majorTitle
-		# 	subHeadingStr = ''
-		# 	for sel in response.xpath('//*[(name()=\'p\' or name()=\'table\') and (preceding-sibling::h2[1][.=\''+majorTitle+'\'])]'):
-		# 		links = sel.xpath('a/text()').extract()
-		# 		subHeading = sel.xpath('span/text()').extract()
-		# 		description = sel.xpath('text()').extract()
-		# 		tableTxt = sel.xpath('tr/td')
-		# 		# If there are links then they must be put into the description
-		# 		if links != empty:
-		# 			# Fix for links that are not adding if it's the first index
-		# 			offset = 1
-		# 			if description[0].encode('utf-8').startswith('–'):
-		# 				offset = 0
-		# 			for i in range(len(links)):
-		# 				description.insert((2*i)+offset, links[i])
-		# 			description = ''.join(description)
-		# 			descs.insert(len(descs), description.encode('utf-8'))
-		# 		elif subHeading != empty and description != empty:
-		# 			for i in range(0, len(subHeading)):
-		# 				subHeadingStr = subHeadingStr + subHeading[i] + description[i]
-		# 		elif description != empty:
-		# 			if ignore not in description:
-		# 				if subHeadingStr != emptyStr:
-		# 					subHeadingStr = subHeadingStr + ' ' + description[0]
-		# 				else:
-		# 					descs.insert(len(descs), description[0].encode('utf-8'))
-		# 		elif subHeading != empty:
-		# 			descs.insert(len(descs), subHeading[0].encode('utf-8'))
-		# 		if tableTxt != empty:
-		# 			# Fix for table description that doesn't have any links
-		# 			tableSel = tableTxt.xpath('p/a/text()')
-		# 			if tableSel == empty or tableSel == None:
-		# 				tableSel = tableTxt.xpath('p/text()').extract()
-		# 				tableDesc = ''
-		# 				for uTxt in tableSel:
-		# 					if nbsp not in uTxt:
-		# 						tableDesc += ' ' + uTxt.encode('utf-8')
-		# 				print tableDesc
-		# 				reqs.insert(len(reqs), tableDesc)
+		# Used to get major names
+		descs = []
+		reqs = []
+		for selector in response.xpath('//p/span/a'):
+			majorTitle = selector.xpath('@title').extract()[0]
+			print majorTitle
+			subHeadingStr = ''
+			for sel in response.xpath('//*[(name()=\'p\' or name()=\'table\') and (preceding-sibling::h2[1][.=\''+majorTitle+'\'])]'):
+				links = sel.xpath('a/text()').extract()
+				subHeading = sel.xpath('span/text()').extract()
+				description = sel.xpath('text()').extract()
+				tableTxt = sel.xpath('tr/td')
+				# If there are links then they must be put into the description
+				if links != empty:
+					# Fix for links that are not adding if it's the first index
+					offset = 1
+					if description[0].encode('utf-8').startswith('–'):
+						offset = 0
+					for i in range(len(links)):
+						description.insert((2*i)+offset, links[i])
+					description = ''.join(description)
+					descs.insert(len(descs), description.encode('utf-8'))
+				elif subHeading != empty and description != empty:
+					for i in range(0, len(subHeading)):
+						subHeadingStr = subHeadingStr + subHeading[i] + description[i]
+				elif description != empty:
+					if ignore not in description:
+						if subHeadingStr != emptyStr:
+							subHeadingStr = subHeadingStr + ' ' + description[0]
+						else:
+							descs.insert(len(descs), description[0].encode('utf-8'))
+				elif subHeading != empty:
+					descs.insert(len(descs), subHeading[0].encode('utf-8'))
+				if tableTxt != empty:
+					# Fix for table description that doesn't have any links
+					tableSel = tableTxt.xpath('p/a/text()')
+					if tableSel == empty or tableSel == None:
+						tableSel = tableTxt.xpath('p/text()').extract()
+						tableDesc = ''
+						for uTxt in tableSel:
+							if nbsp not in uTxt:
+								tableDesc += ' ' + uTxt.encode('utf-8')
+						print tableDesc
+						reqs.insert(len(reqs), tableDesc)
 
-		# 			# If the table consists of a list of subjects or is a description with links
-		# 			else:
-		# 				tableDesc = tableTxt.xpath('p/text()').extract()
-		# 				tableSel = tableSel.extract()
-		# 				reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
-		# 				subHeadingStr = ''
-		# 				for i in range(len(tableSel)):
-		# 					if nbsp in tableDesc[i]:
-		# 						# special condition where its a description with links
-		# 						tableDesc = tableTxt.xpath('p/text()').extract()
-		# 						del tableDesc[0]
-		# 						del tableDesc[-1]
-		# 						print tableDesc
-		# 						print tableSel
-		# 						for j in range(len(tableSel)):
-		# 							tableDesc.insert((2*j)+1, tableSel[j].encode('utf-8'))
-		# 						tableDesc = ''.join(tableDesc)
-		# 						tableSel = tableDesc
-		# 						break
-		# 					tableSel[i] = tableSel[i].encode('utf-8')
-		# 				reqs.insert(len(reqs), tableSel)
-		# 				print tableSel
-		# 		print subHeadingStr
-		# 		print links
-		# 		print subHeading
-		# 		print description
-		# 		print
-		# 	print descs
-		# 	print reqs
-		# 	yield Major(title=majorTitle, department='Schmid College of Science and Technology', description=descs, requirements=reqs)
-		# 	descs = []
-		# 	reqs = []
+					# If the table consists of a list of subjects or is a description with links
+					else:
+						tableDesc = tableTxt.xpath('p/text()').extract()
+						tableSel = tableSel.extract()
+						reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
+						subHeadingStr = ''
+						for i in range(len(tableSel)):
+							if nbsp in tableDesc[i]:
+								# special condition where its a description with links
+								tableDesc = tableTxt.xpath('p/text()').extract()
+								del tableDesc[0]
+								del tableDesc[-1]
+								print tableDesc
+								print tableSel
+								for j in range(len(tableSel)):
+									tableDesc.insert((2*j)+1, tableSel[j].encode('utf-8'))
+								tableDesc = ''.join(tableDesc)
+								tableSel = tableDesc
+								break
+							tableSel[i] = tableSel[i].encode('utf-8')
+						reqs.insert(len(reqs), tableSel)
+						print tableSel
+				print subHeadingStr
+				print links
+				print subHeading
+				print description
+				print
+			print descs
+			print reqs
+			yield Major(title=majorTitle, department='Schmid College of Science and Technology', description=descs, requirements=reqs)
+			descs = []
+			reqs = []
 
 		# Used to get minor names
 		descs = []
@@ -194,26 +185,24 @@ class SchmidCatalogSpider(scrapy.Spider):
 			reqs = []
 
 		# Used to get courses
-		# subject = ''
-		# number = -1
-		# name = ' '
-		# heading = True
-		# for sel in response.xpath('//*[(name()=\'h3\' and re:test(., \'^((?!Minor in).)*$\', \'i\')) or (name()=\'p\' and @class=\'coursedescription\')]'):
-		# 	if (heading == True):
-		# 		courseStr = sel.xpath('text()').extract()[0]
-		# 		courseStr = courseStr.split()
-		# 		name = ' '.join(courseStr[2:])
-		# 		subject = courseStr[0]
-		# 		number = courseStr[1]
-		# 		heading = False
-		# 	else:
-		# 		prerequisites = sel.xpath('a/text()').extract()
-		# 		description = sel.xpath('text()').extract()
-		# 		if (prerequisites != empty):
-		# 			for i in range(len(prerequisites)):
-		# 				description.insert((2*i)+1, prerequisites[i])
-		# 		description = ''.join(description)
-		# 		heading = True
-		# 		yield Course(subject=subject, number=number, name=name, description=description)
-
-		# print json.dumps({"c":0, "b":0, "a":0}, sort_keys=True)
+		subject = ''
+		number = -1
+		name = ' '
+		heading = True
+		for sel in response.xpath('//*[(name()=\'h3\' and re:test(., \'^((?!Minor in).)*$\', \'i\')) or (name()=\'p\' and @class=\'coursedescription\')]'):
+			if (heading == True):
+				courseStr = sel.xpath('text()').extract()[0]
+				courseStr = courseStr.split()
+				name = ' '.join(courseStr[2:])
+				subject = courseStr[0]
+				number = courseStr[1]
+				heading = False
+			else:
+				prerequisites = sel.xpath('a/text()').extract()
+				description = sel.xpath('text()').extract()
+				if (prerequisites != empty):
+					for i in range(len(prerequisites)):
+						description.insert((2*i)+1, prerequisites[i])
+				description = ''.join(description)
+				heading = True
+				yield Course(subject=subject, number=number, name=name, description=description)
