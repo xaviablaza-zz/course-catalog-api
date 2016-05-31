@@ -52,9 +52,12 @@ class SchmidCatalogSpider(scrapy.Spider):
 				tableTxt = sel.xpath('tr/td')
 				# If there are links then they must be put into the description
 				if links != empty:
-					# start at 2*i instead?
+					# Fix for links that are not adding if it's the first index
+					offset = 1
+					if description[0].encode('utf-8').startswith('–'):
+						offset = 0
 					for i in range(len(links)):
-						description.insert((2*i)+1, links[i])
+						description.insert((2*i)+offset, links[i])
 					description = ''.join(description)
 					descs.insert(len(descs), description.encode('utf-8'))
 				elif subHeading != empty and description != empty:
@@ -107,12 +110,11 @@ class SchmidCatalogSpider(scrapy.Spider):
 				print subHeading
 				print description
 				print
-			# Need to fix links not adding if it's the first index
 			print descs
 			print reqs
+			yield Major(title=majorTitle, department='Schmid College of Science and Technology', description=descs, requirements=reqs)
 			descs = []
 			reqs = []
-			# yield Major(title=major1, department='Schmid College of Science and Technology')
 
 		# Used to get minor names
 		for sel in response.xpath('//h3[re:test(., \'Minor in\', \'i\')]'):

@@ -22,6 +22,8 @@ class Course(scrapy.Item):
 class Major(scrapy.Item):
 	title = scrapy.Field()
 	department = scrapy.Field()
+	description = scrapy.Field()
+	requirements = scrapy.Field()
 
 class Minor(scrapy.Item):
 	title = scrapy.Field()
