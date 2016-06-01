@@ -72,7 +72,10 @@ class SchmidCatalogSpider(scrapy.Spider):
 							if nbsp not in uTxt:
 								tableDesc += ' ' + uTxt.encode('utf-8')
 						print tableDesc
-						reqs.insert(len(reqs), tableDesc)
+						if subHeadingStr != emptyStr:
+							reqs.insert(len(reqs), subHeadingStr)
+							subHeadingStr = ''
+						reqs.insert(len(reqs), tableDesc.strip(' '))
 
 					# If the table consists of a list of subjects or is a description with links
 					else:
@@ -149,7 +152,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 							if nbsp not in uTxt:
 								tableDesc += ' ' + uTxt.encode('utf-8')
 						print tableDesc
-						reqs.insert(len(reqs), tableDesc)
+						reqs.insert(len(reqs), tableDesc.strip(' '))
 
 					# If the table consists of a list of subjects or is a description with links
 					else:
