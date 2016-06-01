@@ -9,7 +9,7 @@ import json
 class CuCoursecatalogSpiderPipeline(object):
 
 	def __init__(self):
-		self.file = open('items.jl', 'wb')
+		self.file = open('cu_catalog.json', 'wb')
 
 	def process_item(self, item, spider):
 		line = json.dumps(dict(item)) + '\n'
