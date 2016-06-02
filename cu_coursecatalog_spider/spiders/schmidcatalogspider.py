@@ -83,8 +83,9 @@ class SchmidCatalogSpider(scrapy.Spider):
 					else:
 						tableDesc = tableTxt.xpath('p/text()').extract()
 						tableSel = tableSel.extract()
-						reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
-						subHeadingStr = ''
+						if subHeadingStr != emptyStr:
+							reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
+							subHeadingStr = ''
 						for i in range(len(tableSel)):
 							if nbsp in tableDesc[i]:
 								# special condition where its a description with links
