@@ -29,11 +29,13 @@ class SchmidCatalogSpider(scrapy.Spider):
 		ignore = u'\r\n'
 		nbsp = u'\xa0'
 
+		department = response.xpath('//h1[1]/text()').extract()[0]
+
 		# Used to get major names
 		descs = []
 		reqs = []
-		for selector in response.xpath('//p/span/a'):
-			majorTitle = selector.xpath('@title').extract()[0]
+		for selector in response.xpath('//h2[contains(text(), \'Bachelor of Science in \')]'):
+			majorTitle = selector.xpath('text()').extract()[0]
 			print majorTitle
 			subHeadingStr = ''
 			for sel in response.xpath('//*[(name()=\'p\' or name()=\'table\') and (preceding-sibling::h2[1][.=\''+majorTitle+'\'])]'):
@@ -109,7 +111,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 				print
 			print descs
 			print reqs
-			yield Major(title=majorTitle, department='Schmid College of Science and Technology', description=descs, requirements=reqs)
+			yield Major(title=majorTitle, department=department, description=descs, requirements=reqs)
 			descs = []
 			reqs = []
 
