@@ -46,7 +46,12 @@ class SchmidCatalogSpider(scrapy.Spider):
 			# For each p and table tag that is after the h2 tag containing the majorTitle but before the next h2 tag
 			for sel in response.xpath('//*[(name()=\'p\' or name()=\'table\') and (preceding-sibling::h2[1][.=\''+majorTitle+'\'])]'):
 
-				print sel.xpath('descendant-or-self::*/text()').extract() # use this for descriptions, subHeadings, subHeading addenums, but not anything that has an ignore (\r\n)
+				# use this for descriptions, subHeadings, subHeading addenums, but not anything that has an ignore (\r\n)
+				info = sel.xpath('descendant-or-self::*/text()').extract()
+				# Join parts together to make a unicode string
+				info = ''.join(info)
+				# Encode string as utf-8 for serialization
+				info = info.encode('utf-8')
 
 				# Any links inside the text
 				links = sel.xpath('a/text()').extract()
@@ -57,35 +62,31 @@ class SchmidCatalogSpider(scrapy.Spider):
 				# Any paragraph description of the major, or subHeading text to be added
 				description = sel.xpath('text()').extract()
 
-				# Array containing subjects or description with or without links that come after the subHeading
+				# Array containing subjects, or description with or without links that come after the subHeading
 				tableTxt = sel.xpath('tr/td')
 
 				# If there are links then they must be put into the description
 				if links != empty:
-					# Fix for links that are not adding if link is supposed to be in [0]
-					offset = 1
-					if description[0].encode('utf-8').startswith('–'):
-						offset = 0
-					for i in range(len(links)):
-						description.insert((2*i)+offset, links[i])
-					description = ''.join(description)
-					descs.insert(len(descs), description.encode('utf-8'))
+					descs.append(info)
 
 				# Subheading usually is accompanied by a description (e.g. subHeading = '(requirements' & description = ' 42 credits)')
 				elif subHeading != empty and description != empty:
-					for i in range(0, len(subHeading)):
-						space = ''
-						if subHeadingStr != emptyStr and subHeadingStr[-1] != ' ':
-							space = ' '
-						subHeadingStr = subHeadingStr + space + subHeading[i] + description[i]
+					space = ''
+					if subHeadingStr != emptyStr and subHeadingStr[-1] != ' ' and info[0] != ' ':
+						space = ' '
+					subHeadingStr = subHeadingStr + space + info
 
 				# If the description is not empty then it usually is an addition to the subheading (e.g. 'three of the following')
 				elif description != empty:
 					if ignore not in description:
+						# Trailing/preceding space check
 						if subHeadingStr != emptyStr:
-							subHeadingStr = subHeadingStr + ' ' + description[0]
+							space = ''
+							if subHeadingStr[-1] != ' ' and info[0] != ' ':
+								space = ' '
+							subHeadingStr = subHeadingStr + space + info
 						else:
-							descs.insert(len(descs), description[0].encode('utf-8'))
+							descs.append(info)
 
 				# Add the subHeading if it's not accompanied by a description
 				elif subHeading != empty:
