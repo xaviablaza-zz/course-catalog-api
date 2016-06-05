@@ -112,13 +112,18 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 					# If the table consists of a list of subjects or is a description with links
 					else:
+
+#### could check if ignore not in the text because that will rule out the list of subjects??
+
 						tableDesc = tableTxt.xpath('p/text()').extract()
 						tableSel = tableSel.extract()
 						if subHeadingStr != emptyStr:
 							reqs.insert(len(reqs), subHeadingStr)
 							subHeadingStr = ''
+						descHack = True
 						for i in range(len(tableSel)):
 							if nbsp in tableDesc[i]:
+								descHack = False
 								# special condition where its a description with links
 								tableDesc = tableTxt.xpath('p/text()').extract()
 								del tableDesc[0]
@@ -131,6 +136,10 @@ class SchmidCatalogSpider(scrapy.Spider):
 								tableSel = tableDesc
 								break
 							tableSel[i] = tableSel[i].encode('utf-8')
+						if descHack and reqs != empty and isinstance(reqs[-1], list):
+							if descs != empty:
+								reqs.append(descs[-1])
+								del descs[-1]
 						reqs.insert(len(reqs), tableSel)
 						print 'subjList or descWithLink: ', tableSel
 				print 'subHeadingStr: ', subHeadingStr
