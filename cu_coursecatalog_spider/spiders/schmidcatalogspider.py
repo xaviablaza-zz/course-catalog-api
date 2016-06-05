@@ -12,8 +12,8 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 	# URLs of each school's catalog
 	start_urls = [
-		'https://www.chapman.edu/catalog/oc/current/ug/content/8174.htm', # Schmid College
-		# 'https://www.chapman.edu/catalog/oc/current/ug/content/3610.htm', # Argyros School
+		# 'https://www.chapman.edu/catalog/oc/current/ug/content/8174.htm', # Schmid College
+		'https://www.chapman.edu/catalog/oc/current/ug/content/3610.htm', # Argyros School
 		# 'https://www.chapman.edu/catalog/oc/current/ug/content/3695.htm', # College of Education
 		# 'https://www.chapman.edu/catalog/oc/current/ug/content/3807.htm', # Dodge College
 		# 'https://www.chapman.edu/catalog/oc/current/ug/content/9075.htm', # Crean College
@@ -36,7 +36,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 		descs = []
 		reqs = []
 		# For each major name
-		for selector in response.xpath('//h2[contains(text(), \'Bachelor of Science in \')]'):
+		for selector in response.xpath('//h2[contains(text(), \'Bachelor of\')]'):
 			# Get major name
 			majorTitle = selector.xpath('text()').extract()[0]
 			print majorTitle
@@ -106,7 +106,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 						stripChars  = ' '
 						if subHeadingStr != emptyStr:
 							reqs.insert(len(reqs), subHeadingStr)
-							stripChars += subHeadingStr[-11].encode('utf-8') + subHeadingStr[-10].encode('utf-8')
+							stripChars += subHeadingStr[-11] + subHeadingStr[-10]
 							subHeadingStr = ''
 						reqs.insert(len(reqs), tableDesc.strip(stripChars))
 
@@ -115,7 +115,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 						tableDesc = tableTxt.xpath('p/text()').extract()
 						tableSel = tableSel.extract()
 						if subHeadingStr != emptyStr:
-							reqs.insert(len(reqs), subHeadingStr.encode('utf-8'))
+							reqs.insert(len(reqs), subHeadingStr)
 							subHeadingStr = ''
 						for i in range(len(tableSel)):
 							if nbsp in tableDesc[i]:
