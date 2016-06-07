@@ -140,7 +140,16 @@ class SchmidCatalogSpider(scrapy.Spider):
 							if descs != empty:
 								reqs.append(descs[-1])
 								del descs[-1]
-						reqs.insert(len(reqs), tableSel)
+						if tableTxt.xpath('p[@class=\'chartcredits\']') != empty:
+							reqs.append(tableSel)
+						else:
+							d = tableTxt.xpath('descendant-or-self::*/text()').extract()
+							for i in range(len(d)):
+								if ignore in d[i]:
+									d[i] = d[i].replace(ignore, '')
+							d = ''.join(d)
+							d = d.encode('utf-8')
+							descs.append(d)
 						print 'subjList or descWithLink: ', tableSel
 				print 'subHeadingStr: ', subHeadingStr
 				print 'links: ', links
