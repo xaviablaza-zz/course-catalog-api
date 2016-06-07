@@ -58,6 +58,7 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 				# The subheading (e.g. requirements, electives, etc.)
 				subHeading = sel.xpath('span/text()').extract()
+				pspanlink = sel.xpath('span/a/text()').extract()
 
 				# Any paragraph description of the major, or subHeading text to be added
 				description = sel.xpath('text()').extract()
@@ -71,10 +72,16 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 				# Subheading usually is accompanied by a description (e.g. subHeading = '(requirements' & description = ' 42 credits)')
 				elif subHeading != empty and description != empty:
-					space = ''
-					if subHeadingStr != emptyStr and subHeadingStr[-1] != ' ' and info[0] != ' ':
-						space = ' '
-					subHeadingStr = subHeadingStr + space + info
+					if pspanlink != empty:
+						de = sel.xpath('descendant-or-self::*/text()').extract()
+						de = ''.join(de)
+						de = de.encode('utf-8')
+						descs.append(de)
+					else:
+						space = ''
+						if subHeadingStr != emptyStr and subHeadingStr[-1] != ' ' and info[0] != ' ':
+							space = ' '
+						subHeadingStr = subHeadingStr + space + info
 
 				# If the description is not empty then it usually is an addition to the subheading (e.g. 'three of the following')
 				elif description != empty:
@@ -112,9 +119,6 @@ class SchmidCatalogSpider(scrapy.Spider):
 
 					# If the table consists of a list of subjects or is a description with links
 					else:
-
-#### could check if ignore not in the text because that will rule out the list of subjects??
-
 						tableDesc = tableTxt.xpath('p/text()').extract()
 						tableSel = tableSel.extract()
 						if subHeadingStr != emptyStr:
